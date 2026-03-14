@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>CashBackBro</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="CashBackBro">
+<meta name="color-scheme" content="light only">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+:root {
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  --bg: #f5f5f7;
+  --surface: #ffffff;
+  --surface-raised: #ffffff;
+  --border: rgba(0,0,0,0.08);
+  --separator: rgba(0,0,0,0.1);
+  --blue: #0071e3;
+  --blue-hover: #0077ed;
+  --blue-light: rgba(0,113,227,0.1);
+  --green: #1d8348;
+  --green-light: rgba(29,131,72,0.08);
+  --red: #c0392b;
+  --red-light: rgba(192,57,43,0.08);
+  --text: #1d1d1f;
+  --text2: #6e6e73;
+  --text3: #aeaeb2;
+  --fill: rgba(0,0,0,0.04);
+  --fill2: rgba(0,0,0,0.06);
+  --radius: 18px;
+  --radius-sm: 12px;
+  --radius-xs: 8px;
+  --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --shadow-card: 0 2px 12px rgba(0,0,0,0.06), 0 0 0 0.5px rgba(0,0,0,0.04);
+  --shadow-elevated: 0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06);
+}
+
+html { scroll-behavior: smooth; color-scheme: light only; background: #f5f5f7; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  min-height: 100vh;
+  padding-bottom: 60px;
+  font-size: 17px;
+  line-height: 1.47;
+  letter-spacing: -0.022em;
+  -webkit-text-size-adjust: 100%;
+}
+
+#toast {
+  position: fixed; top: 20px; left: 50%;
+  transform: translateX(-50%) translateY(-80px);
+  background: rgba(29,29,31,0.95);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  color: #f5f5f7; font-size: 13px; font-weight: 500; letter-spacing: -0.01em;
+  padding: 9px 20px; border-radius: 22px;
+  transition: transform 0.4s cubic-bezier(0.34,1.4,0.64,1);
+  z-index: 9999; pointer-events: none;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+}
+#toast.show { transform: translateX(-50%) translateY(0); }
+
+nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(245,245,247,0.96);
+  backdrop-filter: saturate(180%) blur(24px);
+  -webkit-backdrop-filter: saturate(180%) blur(24px);
+  border-bottom: 0.5px solid var(--separator);
+  display: flex; align-items: center; justify-content: center;
+  padding: 0 20px; height: 52px;
+}
+.nav-logo { font-size: 19px; font-weight: 700; color: var(--text); letter-spacing: -0.5px; user-select: none; }
+.nav-logo span { color: var(--blue); }
+
+.wrap { max-width: 420px; margin: 0 auto; padding: 0 16px; }
+
+.hero { padding: 36px 0 8px; text-align: center; }
+.hero-eyebrow { font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--blue); margin-bottom: 8px; }
+.hero-title { font-size: 40px; font-weight: 700; letter-spacing: -1.2px; line-height: 1.05; color: #1d1d1f; margin-bottom: 6px; }
+.hero-sub { font-size: 17px; font-weight: 400; color: var(--text2); letter-spacing: -0.2px; }
+
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 24px 0 10px; }
+.sum-card { background: var(--surface); border-radius: var(--radius); padding: 20px 18px; box-shadow: var(--shadow-card); position: relative; overflow: hidden; transition: transform var(--transition); }
+.sum-card:active { transform: scale(0.98); }
+.sum-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: var(--radius) var(--radius) 0 0; }
+.sum-card.sc-in::before { background: var(--green); }
+.sum-card.sc-out::before { background: var(--red); }
+.sum-label { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text2); margin-bottom: 10px; }
+.sum-amount { font-size: 30px; font-weight: 700; letter-spacing: -1px; line-height: 1; }
+.sum-card.sc-in .sum-amount { color: var(--green); }
+.sum-card.sc-out .sum-amount { color: var(--red); }
+.sum-count { font-size: 13px; color: var(--text2); margin-top: 5px; letter-spacing: -0.1px; }
+
+/* ── WATER BANNER ── */
+.net-banner {
+  border-radius: var(--radius);
+  padding: 0;
+  box-shadow: 0 6px 28px rgba(0,100,200,0.25);
+  margin-bottom: 24px;
+  overflow: hidden;
+  position: relative;
+  min-height: 120px;
+  background: #0a1a2e;
+}
+.nb-ocean { position: absolute; inset: 0; background: linear-gradient(180deg, #0a1a2e 0%, #0d2240 100%); }
+.nb-water {
+  position: absolute; bottom: 0; left: -10%; right: -10%;
+  height: 0%;
+  transition: height 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(180deg, rgba(0,150,255,0.85) 0%, rgba(0,100,220,0.92) 40%, rgba(0,60,180,1) 100%);
+}
+.nb-wave { position: absolute; top: -18px; left: -10%; right: -10%; height: 36px; overflow: hidden; }
+.nb-wave svg { position: absolute; bottom: 0; left: 0; width: 200%; height: 36px; animation: waveScroll 2.8s linear infinite; }
+.nb-wave2 svg { animation: waveScroll 4s linear infinite reverse; opacity: 0.5; }
+@keyframes waveScroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.nb-bubbles { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.nb-bubble { position: absolute; font-size: 18px; animation: bubbleRise linear infinite; opacity: 0; }
+@keyframes bubbleRise {
+  0%   { transform: translateY(100%) scale(0.6); opacity: 0; }
+  10%  { opacity: 0.9; }
+  80%  { opacity: 0.7; }
+  100% { transform: translateY(-120%) scale(1.1); opacity: 0; }
+}
+.nb-content { position: relative; z-index: 10; display: flex; justify-content: space-between; align-items: center; padding: 22px 22px; }
+.net-banner .nb-label { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.65); letter-spacing: 0.08em; text-transform: uppercase; }
+.net-banner .nb-val { font-size: 36px; font-weight: 800; color: #ffffff; letter-spacing: -1.2px; text-shadow: 0 2px 16px rgba(0,0,0,0.4), 0 0 30px rgba(255,255,255,0.15); }
+.net-banner .nb-val.pos { color: #ffffff; }
+.net-banner .nb-val.neg { color: #ffcc00; }
+.net-banner .nb-right { text-align: right; }
+.net-banner .nb-sub { font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 3px; }
+
+.seg-outer { margin-bottom: 20px; }
+.segmented { background: var(--fill2); border-radius: 12px; padding: 3px; display: flex; }
+.seg-btn { flex: 1; font-family: var(--font); font-size: 14px; font-weight: 500; padding: 8px 6px; border: none; border-radius: 10px; cursor: pointer; background: none; color: var(--text2); transition: all var(--transition); letter-spacing: -0.15px; white-space: nowrap; }
+.seg-btn.active { background: var(--surface); color: var(--text); font-weight: 600; box-shadow: 0 1px 6px rgba(0,0,0,0.1), 0 0.5px 2px rgba(0,0,0,0.06); }
+
+.people-row { display: flex; gap: 8px; overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 -16px; padding: 4px 16px 12px; scrollbar-width: none; }
+.people-row::-webkit-scrollbar { display: none; }
+.p-chip { font-family: var(--font); font-size: 14px; font-weight: 500; padding: 8px 16px; border-radius: 22px; cursor: pointer; border: 1px solid var(--border); background: var(--surface); color: var(--text2); transition: all var(--transition); white-space: nowrap; display: flex; align-items: center; gap: 7px; box-shadow: var(--shadow-card); flex-shrink: 0; letter-spacing: -0.1px; }
+.p-chip.pin { background: var(--green); color: #fff; border-color: var(--green); box-shadow: 0 3px 12px rgba(29,131,72,0.3); }
+.p-chip.pout { background: var(--red); color: #fff; border-color: var(--red); box-shadow: 0 3px 12px rgba(192,57,43,0.25); }
+.p-chip:active { transform: scale(0.95); }
+.chip-amt { font-size: 12px; font-weight: 600; background: rgba(0,0,0,0.12); border-radius: 10px; padding: 2px 8px; }
+.p-chip.pin .chip-amt, .p-chip.pout .chip-amt { background: rgba(255,255,255,0.22); color: rgba(255,255,255,0.9); }
+.btn-new-p { font-family: var(--font); font-size: 14px; font-weight: 500; padding: 8px 16px; border-radius: 22px; cursor: pointer; border: 1px dashed rgba(0,113,227,0.4); background: none; color: var(--blue); white-space: nowrap; flex-shrink: 0; transition: all var(--transition); letter-spacing: -0.1px; }
+.btn-new-p:active { background: var(--blue-light); }
+
+.person-hdr { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 16px; padding-top: 4px; }
+.person-hdr-left .ph-name { font-size: 28px; font-weight: 700; letter-spacing: -0.8px; line-height: 1; color: #1d1d1f; }
+.person-hdr-left .ph-amt { font-size: 17px; font-weight: 500; margin-top: 4px; letter-spacing: -0.2px; }
+.ph-amt.ain { color: var(--green); }
+.ph-amt.aout { color: var(--red); }
+.person-hdr-right { display: flex; gap: 6px; padding-top: 4px; }
+.btn-pill { font-family: var(--font); font-size: 13px; font-weight: 500; padding: 6px 14px; border-radius: 20px; border: none; cursor: pointer; background: var(--fill2); color: var(--text2); transition: all var(--transition); letter-spacing: -0.1px; }
+.btn-pill:active { opacity: 0.6; transform: scale(0.95); }
+.btn-pill.danger { color: var(--red); background: var(--red-light); }
+
+.form-card { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-card); overflow: hidden; margin-bottom: 12px; }
+.fc-row { padding: 14px 18px; border-bottom: 0.5px solid var(--border); }
+.fc-row:last-child { border-bottom: none; }
+.fc-row-split { display: flex; }
+.fc-row-split .fc-row { flex: 1; border-bottom: none; border-right: 0.5px solid var(--border); }
+.fc-row-split .fc-row:last-child { border-right: none; }
+.fc-label { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text3); margin-bottom: 5px; }
+.fc-input { font-family: var(--font); font-size: 17px; font-weight: 400; background: none; border: none; outline: none; color: var(--text); width: 100%; caret-color: var(--blue); letter-spacing: -0.2px; }
+.fc-input::placeholder { color: var(--text3); }
+
+.btn-primary { width: 100%; font-family: var(--font); font-size: 17px; font-weight: 600; letter-spacing: -0.3px; padding: 15px; border: none; border-radius: var(--radius); cursor: pointer; transition: all var(--transition); margin-bottom: 20px; }
+.btn-primary.bp-in { background: var(--green); color: #fff; box-shadow: 0 4px 16px rgba(29,131,72,0.3); }
+.btn-primary.bp-out { background: var(--red); color: #fff; box-shadow: 0 4px 16px rgba(192,57,43,0.25); }
+.btn-primary:active { transform: scale(0.98); opacity: 0.88; }
+
+.sec-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding-top: 4px; }
+.sec-label { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; color: var(--text); }
+.btn-link { font-family: var(--font); font-size: 14px; font-weight: 500; color: var(--blue); background: none; border: none; cursor: pointer; letter-spacing: -0.1px; }
+.btn-link.danger { color: var(--red); }
+.btn-link:active { opacity: 0.6; }
+
+.entry-card { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-card); margin-bottom: 10px; overflow: hidden; animation: riseUp 0.32s cubic-bezier(0.34,1.4,0.64,1) both; }
+@keyframes riseUp { from { opacity: 0; transform: translateY(12px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+.entry-card.ec-done { opacity: 0.48; }
+.ec-main { display: flex; align-items: center; gap: 14px; padding: 16px 18px; }
+.ec-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+.eci-in { background: var(--green-light); }
+.eci-out { background: var(--red-light); }
+.eci-done { background: var(--fill); }
+.ec-body { flex: 1; min-width: 0; }
+.ec-title { font-size: 16px; font-weight: 600; letter-spacing: -0.3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #1d1d1f; }
+.ec-meta { font-size: 13px; color: var(--text2); margin-top: 2px; letter-spacing: -0.1px; display: flex; gap: 5px; flex-wrap: wrap; align-items: center; }
+.ec-right { text-align: right; flex-shrink: 0; }
+.ec-amt { font-size: 18px; font-weight: 700; letter-spacing: -0.4px; }
+.eca-in { color: var(--green); }
+.eca-out { color: var(--red); }
+.eca-done { color: var(--text3); text-decoration: line-through; }
+.ec-pay-btn { font-family: var(--font); font-size: 12px; font-weight: 600; background: var(--blue-light); color: var(--blue); border: none; border-radius: 8px; padding: 4px 10px; cursor: pointer; margin-top: 5px; transition: all var(--transition); letter-spacing: -0.05px; }
+.ec-pay-btn:active { background: var(--blue); color: #fff; }
+.ec-pay-btn.active { background: var(--blue); color: #fff; }
+.btn-ec-del { background: none; border: none; font-size: 22px; color: var(--text3); cursor: pointer; padding: 0 0 0 10px; flex-shrink: 0; transition: color var(--transition); line-height: 1; }
+.btn-ec-del:active { color: var(--red); }
+
+.ec-progress { padding: 0 18px 12px; }
+.prog-track { height: 4px; background: var(--fill2); border-radius: 2px; overflow: hidden; }
+.prog-fill { height: 100%; background: linear-gradient(90deg, var(--green), #2ecc71); border-radius: 2px; transition: width 0.6s cubic-bezier(0.4,0,0.2,1); }
+
+.ec-pmts { padding: 0 18px 12px; display: flex; flex-wrap: wrap; gap: 6px; }
+.pmt-pill { font-family: var(--font); font-size: 12px; font-weight: 500; background: var(--green-light); color: var(--green); border: none; border-radius: 20px; padding: 4px 12px; cursor: pointer; transition: all var(--transition); }
+.pmt-pill:active { background: var(--red-light); color: var(--red); }
+
+.ec-pay-row { display: none; padding: 12px 18px 16px; border-top: 0.5px solid var(--border); gap: 10px; align-items: center; }
+.ec-pay-row.open { display: flex; }
+.pay-field { flex: 1; font-family: var(--font); font-size: 16px; background: var(--fill); border: none; outline: none; color: var(--text); padding: 10px 14px; border-radius: var(--radius-xs); caret-color: var(--blue); letter-spacing: -0.2px; }
+.pay-field::placeholder { color: var(--text3); }
+.btn-apply { font-family: var(--font); font-size: 15px; font-weight: 600; background: var(--blue); color: #fff; border: none; padding: 10px 20px; border-radius: var(--radius-xs); cursor: pointer; letter-spacing: -0.2px; transition: all var(--transition); white-space: nowrap; }
+.btn-apply:active { opacity: 0.8; transform: scale(0.97); }
+.btn-pay-x { font-size: 20px; background: none; border: none; color: var(--text3); cursor: pointer; padding: 0; line-height: 1; }
+
+.empty-wrap { text-align: center; padding: 56px 24px 40px; }
+.empty-emoji { font-size: 52px; margin-bottom: 16px; display: block; }
+.empty-h { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 8px; color: #1d1d1f; }
+.empty-p { font-size: 15px; color: var(--text2); letter-spacing: -0.1px; }
+
+.backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); z-index: 300; align-items: flex-end; justify-content: center; }
+.backdrop.open { display: flex; }
+.sheet { background: var(--surface); border-radius: 22px 22px 0 0; width: 100%; max-width: 430px; padding-bottom: env(safe-area-inset-bottom, 20px); animation: sheetUp 0.38s cubic-bezier(0.32,1.1,0.56,1); box-shadow: 0 -4px 40px rgba(0,0,0,0.14); }
+@keyframes sheetUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.sheet-handle { width: 36px; height: 4px; background: var(--text3); border-radius: 2px; margin: 12px auto 0; }
+.sheet-head { padding: 16px 24px 0; text-align: center; }
+.sheet-ttl { font-size: 17px; font-weight: 700; letter-spacing: -0.4px; color: #1d1d1f; }
+.sheet-sub { font-size: 14px; color: var(--text2); margin-top: 3px; letter-spacing: -0.1px; }
+.sheet-sep { height: 0.5px; background: var(--separator); margin: 16px 0 0; }
+.sheet-row { padding: 14px 24px; border-bottom: 0.5px solid var(--border); }
+.sheet-lbl { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text3); margin-bottom: 5px; }
+.sheet-inp { font-family: var(--font); font-size: 17px; background: none; border: none; outline: none; color: #1d1d1f; width: 100%; caret-color: var(--blue); letter-spacing: -0.2px; }
+.sheet-inp::placeholder { color: var(--text3); }
+.sheet-actions { padding: 14px 16px 8px; display: flex; flex-direction: column; gap: 10px; }
+.btn-sheet-ok { width: 100%; font-family: var(--font); font-size: 17px; font-weight: 600; padding: 15px; border: none; border-radius: var(--radius); cursor: pointer; letter-spacing: -0.3px; transition: all var(--transition); }
+.btn-sheet-ok.ok-in { background: var(--green); color: #fff; box-shadow: 0 4px 16px rgba(29,131,72,0.28); }
+.btn-sheet-ok.ok-out { background: var(--red); color: #fff; box-shadow: 0 4px 16px rgba(192,57,43,0.22); }
+.btn-sheet-ok:active { transform: scale(0.98); opacity: 0.88; }
+.btn-sheet-cancel { width: 100%; font-family: var(--font); font-size: 17px; padding: 15px; border: none; border-radius: var(--radius); background: var(--fill2); color: var(--text); cursor: pointer; transition: all var(--transition); }
+.btn-sheet-cancel:active { opacity: 0.7; }
+
+footer { text-align: center; padding: 32px 20px 0; font-size: 12px; color: var(--text3); letter-spacing: -0.05px; }
+footer span { color: var(--blue); }
+
+@media (prefers-color-scheme: dark) {
+  html, body { background: #f5f5f7 !important; color: #1d1d1f !important; }
+  .hero-title { color: #1d1d1f !important; }
+  .hero-sub { color: #6e6e73 !important; }
+  .hero-eyebrow { color: #0071e3 !important; }
+  nav { background: rgba(245,245,247,0.96) !important; }
+  .sum-card { background: #ffffff !important; color: #1d1d1f !important; }
+  .sum-label { color: #6e6e73 !important; }
+  .sum-count { color: #6e6e73 !important; }
+  .form-card { background: #ffffff !important; }
+  .fc-label { color: #aeaeb2 !important; }
+  .fc-input { color: #1d1d1f !important; }
+  .entry-card { background: #ffffff !important; }
+  .ec-title { color: #1d1d1f !important; }
+  .ec-meta { color: #6e6e73 !important; }
+  .segmented { background: rgba(0,0,0,0.06) !important; }
+  .seg-btn { color: #6e6e73 !important; }
+  .seg-btn.active { background: #ffffff !important; color: #1d1d1f !important; }
+  .p-chip { background: #ffffff !important; color: #6e6e73 !important; }
+  .person-hdr-left .ph-name { color: #1d1d1f !important; }
+  .sec-label { color: #1d1d1f !important; }
+  .sheet { background: #ffffff !important; }
+  .sheet-ttl { color: #1d1d1f !important; }
+  .sheet-inp { color: #1d1d1f !important; }
+  .nav-logo { color: #1d1d1f !important; }
+  .empty-h { color: #1d1d1f !important; }
+}
+</style>
+</head>
+<body>
+
+<div id="toast">✓ Changes saved</div>
+
+<nav>
+  <div class="nav-logo">CashBack<span>Bro</span></div>
+</nav>
+
+<div class="wrap">
+  <div class="hero">
+    <div class="hero-eyebrow">Personal Finance</div>
+    <div class="hero-title">Money Tracker</div>
+    <div class="hero-sub">Know who owes who. Always.</div>
+  </div>
+
+  <div class="summary-grid">
+    <div class="sum-card sc-in">
+      <div class="sum-label">Owed to Me</div>
+      <div class="sum-amount" id="netIn">$0</div>
+      <div class="sum-count" id="inCount">0 people</div>
+    </div>
+    <div class="sum-card sc-out">
+      <div class="sum-label">I Owe</div>
+      <div class="sum-amount" id="netOut">$0</div>
+      <div class="sum-count" id="outCount">0 people</div>
+    </div>
+  </div>
+
+  <div class="net-banner" id="netBanner">
+    <div class="nb-ocean"></div>
+    <div class="nb-water" id="nbWater">
+      <div class="nb-wave">
+        <svg viewBox="0 0 1440 36" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M0,18 C120,36 240,0 360,18 C480,36 600,0 720,18 C840,36 960,0 1080,18 C1200,36 1320,0 1440,18 L1440,36 L0,36 Z" fill="rgba(0,150,255,0.85)"/>
+          <path d="M0,18 C120,36 240,0 360,18 C480,36 600,0 720,18 C840,36 960,0 1080,18 C1200,36 1320,0 1440,18 L1440,36 L0,36 Z" fill="rgba(0,150,255,0.85)" transform="translate(720,0)"/>
+        </svg>
+      </div>
+      <div class="nb-wave nb-wave2">
+        <svg viewBox="0 0 1440 36" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M0,24 C180,6 360,36 540,24 C720,12 900,36 1080,24 C1260,12 1350,30 1440,24 L1440,36 L0,36 Z" fill="rgba(0,100,220,0.6)"/>
+          <path d="M0,24 C180,6 360,36 540,24 C720,12 900,36 1080,24 C1260,12 1350,30 1440,24 L1440,36 L0,36 Z" fill="rgba(0,100,220,0.6)" transform="translate(720,0)"/>
+        </svg>
+      </div>
+    </div>
+    <div class="nb-bubbles" id="nbBubbles"></div>
+    <div class="nb-content">
+      <div>
+        <div class="nb-label">Net Position</div>
+        <div class="nb-sub">Your overall balance</div>
+      </div>
+      <div class="nb-right">
+        <div class="nb-val" id="netBal">$0.00</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="seg-outer">
+    <div class="segmented">
+      <button class="seg-btn active" id="segIn" onclick="setMode('in')">💰 They Owe Me</button>
+      <button class="seg-btn" id="segOut" onclick="setMode('out')">📤 I Owe Them</button>
+    </div>
+  </div>
+
+  <div class="people-row" id="peopleRow"></div>
+  <div id="personView"></div>
+
+  <footer>All data stays on your device.<br>Built with <span>♥</span> · CashBackBro</footer>
+</div>
+
+<div class="backdrop" id="backdrop">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <div class="sheet-ttl" id="sheetTtl">Add Person</div>
+      <div class="sheet-sub" id="sheetSub">Enter their name below</div>
+    </div>
+    <div class="sheet-sep"></div>
+    <div class="sheet-row">
+      <div class="sheet-lbl">Name</div>
+      <input class="sheet-inp" id="sheetInp" placeholder="e.g. Dad, Jake, Mom…" autocomplete="off" autocorrect="off" />
+    </div>
+    <div class="sheet-actions">
+      <button class="btn-sheet-ok ok-in" id="sheetOk" onclick="confirmModal()">Add Person</button>
+      <button class="btn-sheet-cancel" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SK='debtTracker_v3';
+let D={in:{people:[],active:null},out:{people:[],active:null}};
+let mode='in', mModal=null, renameId=null;
+
+function loadData(){
+  try{const d=JSON.parse(localStorage.getItem(SK)||'{}');if(d.in){D=d;return;}}catch(e){}
+  try{const o=JSON.parse(localStorage.getItem('debtTrackerData_v2')||'{}');if(o.people){D.in.people=o.people;D.in.active=o.activePerson;return;}}catch(e){}
+  const dad={id:uid(),name:'Dad',entries:[]};
+  D.in.people.push(dad);D.in.active=dad.id;
+}
+
+function save(){
+  try{localStorage.setItem(SK,JSON.stringify(D));}catch(e){}
+  const t=document.getElementById('toast');
+  t.classList.add('show');clearTimeout(t._t);
+  t._t=setTimeout(()=>t.classList.remove('show'),1800);
+}
+
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+
+function fmt(n,compact=false){
+  const v=Number(n);
+  if(compact&&v>=10000)return '$'+(v/1000).toFixed(1)+'k';
+  return '$'+v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+
+function fmtDate(d){
+  if(!d)return'';
+  const[y,m,day]=d.split('-');
+  return['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(m)-1]+' '+parseInt(day);
+}
+
+function personRem(p){
+  return(p.entries||[]).reduce((s,e)=>{
+    const pd=(e.payments||[]).reduce((a,x)=>a+x.amount,0);
+    return s+Math.max(0,parseFloat(e.amount)-pd);
+  },0);
+}
+function secTotal(side){return(D[side].people||[]).reduce((s,p)=>s+personRem(p),0);}
+
+function setMode(m){
+  mode=m;
+  document.getElementById('segIn').className='seg-btn'+(m==='in'?' active':'');
+  document.getElementById('segOut').className='seg-btn'+(m==='out'?' active':'');
+  render();
+}
+
+function render(){renderSummary();renderPeople();renderView();}
+
+function renderSummary(){
+  const inT=secTotal('in'),outT=secTotal('out'),net=inT-outT;
+  document.getElementById('netIn').textContent=fmt(inT,true);
+  document.getElementById('netOut').textContent=fmt(outT,true);
+  const ic=D.in.people.filter(p=>personRem(p)>0).length;
+  const oc=D.out.people.filter(p=>personRem(p)>0).length;
+  document.getElementById('inCount').textContent=ic+(ic===1?' person':' people');
+  document.getElementById('outCount').textContent=oc+(oc===1?' person':' people');
+  const el=document.getElementById('netBal');
+  if(net>0){el.textContent='+'+fmt(net);el.className='nb-val pos';}
+  else if(net<0){el.textContent=fmt(net);el.className='nb-val neg';}
+  else{el.textContent='$0.00';el.className='nb-val';}
+  updateWater(inT,outT);
+}
+
+function updateWater(inT,outT){
+  const water=document.getElementById('nbWater');
+  const bubbles=document.getElementById('nbBubbles');
+  if(!water)return;
+  const totalMoney=inT+outT;
+  const pct=Math.min(100,(totalMoney/1000)*100);
+  const fillPct=totalMoney>0?Math.max(12,pct):0;
+  water.style.height=fillPct+'%';
+  if(!bubbles)return;
+  let emoji='💵';
+  if(totalMoney>=500)emoji='💰';
+  if(totalMoney>=1000)emoji='🤑';
+  if(totalMoney>=5000)emoji='💸';
+  const bubbleCount=totalMoney>0?Math.min(12,Math.max(3,Math.floor(totalMoney/80))):0;
+  if(bubbles.children.length===bubbleCount&&bubbles.dataset.emoji===emoji)return;
+  bubbles.dataset.emoji=emoji;
+  bubbles.innerHTML='';
+  for(let i=0;i<bubbleCount;i++){
+    const span=document.createElement('span');
+    span.className='nb-bubble';
+    span.textContent=emoji;
+    span.style.left=(8+Math.random()*84)+'%';
+    span.style.animationDuration=(2.5+Math.random()*3)+'s';
+    span.style.animationDelay=(Math.random()*3)+'s';
+    span.style.fontSize=(14+Math.random()*10)+'px';
+    bubbles.appendChild(span);
+  }
+}
+
+function renderPeople(){
+  const sec=D[mode],isOut=mode==='out';
+  const ac=isOut?'pout':'pin';
+  const chips=(sec.people||[]).map(p=>`
+    <button class="p-chip ${p.id===sec.active?ac:''}" onclick="selPerson('${p.id}')">
+      ${p.name}<span class="chip-amt">${fmt(personRem(p),true)}</span>
+    </button>`).join('');
+  document.getElementById('peopleRow').innerHTML=chips+
+    `<button class="btn-new-p" onclick="openAdd()">+ Add Person</button>`;
+}
+
+function renderView(){
+  const view=document.getElementById('personView');
+  const sec=D[mode],isOut=mode==='out';
+  const person=(sec.people||[]).find(p=>p.id===sec.active);
+  if(!person){
+    view.innerHTML=`<div class="empty-wrap"><span class="empty-emoji">${isOut?'📤':'💰'}</span><div class="empty-h">No one added yet</div><div class="empty-p">Tap "+ Add Person" to get started.</div></div>`;
+    return;
+  }
+  const rem=personRem(person);
+  const entries=person.entries||[];
+  const cBtn=isOut?'bp-out':'bp-in';
+  const amtCls=isOut?'eca-out':'eca-in';
+  const iconCls=isOut?'eci-out':'eci-in';
+  const emoji=isOut?'📤':'💰';
+  const ph=isOut?'e.g. borrowed their jacket':'e.g. lent for gas';
+
+  let eHTML='';
+  if(!entries.length){
+    eHTML=`<div class="empty-wrap" style="padding:32px 24px"><span class="empty-emoji">🧾</span><div class="empty-h">No entries yet</div><div class="empty-p">Add your first debt above.</div></div>`;
+  } else {
+    eHTML=entries.map((e,i)=>{
+      const pmts=e.payments||[];
+      const totPaid=pmts.reduce((s,p)=>s+p.amount,0);
+      const orig=parseFloat(e.amount);
+      const left=Math.max(0,orig-totPaid);
+      const pct=Math.min(100,(totPaid/orig)*100);
+      const done=left<=0;
+      const pid=person.id;
+      return `<div class="entry-card ${done?'ec-done':''}">
+        <div class="ec-main">
+          <div class="ec-icon ${done?'eci-done':iconCls}">${done?'✅':emoji}</div>
+          <div class="ec-body">
+            <div class="ec-title">${e.desc}</div>
+            <div class="ec-meta">
+              ${e.date?`<span>${fmtDate(e.date)}</span>`:''}
+              ${totPaid>0&&!done?`<span>·</span><span style="color:${isOut?'var(--red)':'var(--green)'}">$${left.toFixed(2)} left</span>`:''}
+              ${done?`<span style="color:var(--green);font-weight:600">Settled ✓</span>`:''}
+            </div>
+          </div>
+          <div class="ec-right">
+            <div class="ec-amt ${done?'eca-done':amtCls}">${fmt(orig)}</div>
+            ${!done?`<button class="ec-pay-btn" id="epb-${pid}-${i}" onclick="togPay('${pid}',${i})">Record Payment</button>`:''}
+          </div>
+          <button class="btn-ec-del" onclick="delEntry('${pid}',${i})">×</button>
+        </div>
+        ${totPaid>0?`<div class="ec-progress"><div class="prog-track"><div class="prog-fill" style="width:${pct}%"></div></div></div>`:''}
+        ${pmts.length?`<div class="ec-pmts">${pmts.map((p,pi)=>`<button class="pmt-pill" onclick="rmPmt('${pid}',${i},${pi})">−${fmt(p.amount)} ×</button>`).join('')}</div>`:''}
+        <div class="ec-pay-row" id="pr-${pid}-${i}">
+          <input class="pay-field" id="pa-${pid}-${i}" type="number" placeholder="Amount paid…" min="0.01" step="0.01" onkeydown="if(event.key==='Enter')applyPmt('${pid}',${i})" />
+          <button class="btn-apply" onclick="applyPmt('${pid}',${i})">Apply</button>
+          <button class="btn-pay-x" onclick="togPay('${pid}',${i})">×</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  const dirLabel=isOut?`You owe ${person.name}`:`${person.name} owes you`;
+  view.innerHTML=`
+    <div class="person-hdr">
+      <div class="person-hdr-left">
+        <div class="ph-name">${person.name}</div>
+        <div class="ph-amt ${isOut?'aout':'ain'}">${fmt(rem)} · ${dirLabel}</div>
+      </div>
+      <div class="person-hdr-right">
+        <button class="btn-pill" onclick="openRename('${person.id}')">Rename</button>
+        <button class="btn-pill danger" onclick="delPerson('${person.id}')">Delete</button>
+      </div>
+    </div>
+    <div class="form-card">
+      <div class="fc-row">
+        <div class="fc-label">Description</div>
+        <input class="fc-input" id="di" placeholder="${ph}" autocomplete="off" onkeydown="if(event.key==='Enter')addEntry('${person.id}')" />
+      </div>
+      <div class="fc-row-split">
+        <div class="fc-row">
+          <div class="fc-label">Amount</div>
+          <input class="fc-input" id="ai" type="number" placeholder="$0.00" min="0" step="0.01" onkeydown="if(event.key==='Enter')addEntry('${person.id}')" />
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Date</div>
+          <input class="fc-input" id="dti" type="date" />
+        </div>
+      </div>
+    </div>
+    <button class="btn-primary ${cBtn}" onclick="addEntry('${person.id}')">Add Entry</button>
+    <div class="sec-row">
+      <div class="sec-label">Entries</div>
+      <button class="btn-link danger" onclick="clearAll('${person.id}')">Clear All</button>
+    </div>
+    ${eHTML}
+  `;
+
+  const dt=document.getElementById('dti');
+  if(dt)dt.valueAsDate=new Date();
+}
+
+function selPerson(id){D[mode].active=id;render();}
+
+function openAdd(){
+  mModal='add';const isOut=mode==='out';
+  document.getElementById('sheetTtl').textContent=isOut?'Add Someone You Owe':'Add Someone Who Owes You';
+  document.getElementById('sheetSub').textContent=isOut?'Track money you owe them':'Track money they owe you';
+  const ok=document.getElementById('sheetOk');
+  ok.textContent='Add Person';ok.className=`btn-sheet-ok ${isOut?'ok-out':'ok-in'}`;
+  document.getElementById('sheetInp').value='';
+  document.getElementById('backdrop').classList.add('open');
+  setTimeout(()=>document.getElementById('sheetInp').focus(),400);
+}
+
+function openRename(id){
+  mModal='rename';renameId=id;
+  const p=D[mode].people.find(x=>x.id===id);
+  document.getElementById('sheetTtl').textContent='Rename';
+  document.getElementById('sheetSub').textContent='Update their name';
+  const ok=document.getElementById('sheetOk');
+  ok.textContent='Save Changes';ok.className=`btn-sheet-ok ${mode==='out'?'ok-out':'ok-in'}`;
+  document.getElementById('sheetInp').value=p.name;
+  document.getElementById('backdrop').classList.add('open');
+  setTimeout(()=>{const el=document.getElementById('sheetInp');el.focus();el.select();},400);
+}
+
+function closeModal(){document.getElementById('backdrop').classList.remove('open');}
+
+function confirmModal(){
+  const name=document.getElementById('sheetInp').value.trim();
+  if(!name){document.getElementById('sheetInp').focus();return;}
+  if(mModal==='add'){
+    const p={id:uid(),name,entries:[]};
+    D[mode].people.push(p);D[mode].active=p.id;
+  }else if(mModal==='rename'&&renameId){
+    const p=D[mode].people.find(x=>x.id===renameId);
+    if(p)p.name=name;
+  }
+  closeModal();save();render();
+}
+
+function delPerson(id){
+  const p=D[mode].people.find(x=>x.id===id);
+  if(!confirm(`Delete ${p.name} and all their entries?`))return;
+  D[mode].people=D[mode].people.filter(x=>x.id!==id);
+  if(D[mode].active===id)D[mode].active=D[mode].people[0]?.id||null;
+  save();render();
+}
+
+function addEntry(pid){
+  const desc=document.getElementById('di').value.trim();
+  const amount=parseFloat(document.getElementById('ai').value);
+  const date=document.getElementById('dti').value;
+  if(!desc||!amount||amount<=0)return;
+  const p=D[mode].people.find(x=>x.id===pid);
+  if(!p)return;
+  if(!p.entries)p.entries=[];
+  p.entries.unshift({id:uid(),desc,amount,date,payments:[]});
+  save();render();
+}
+
+function delEntry(pid,i){
+  const p=D[mode].people.find(x=>x.id===pid);
+  if(!p)return;
+  p.entries.splice(i,1);save();render();
+}
+
+function clearAll(pid){
+  const p=D[mode].people.find(x=>x.id===pid);
+  if(!p||!p.entries.length||!confirm(`Clear all entries for ${p.name}?`))return;
+  p.entries=[];save();render();
+}
+
+function togPay(pid,i){
+  const row=document.getElementById(`pr-${pid}-${i}`);
+  const btn=document.getElementById(`epb-${pid}-${i}`);
+  if(!row)return;
+  const on=row.classList.toggle('open');
+  if(btn)btn.classList.toggle('active',on);
+  if(on)setTimeout(()=>document.getElementById(`pa-${pid}-${i}`)?.focus(),80);
+}
+
+function applyPmt(pid,i){
+  const inp=document.getElementById(`pa-${pid}-${i}`);
+  if(!inp)return;
+  const amount=parseFloat(inp.value);
+  if(!amount||amount<=0){inp.focus();return;}
+  const p=D[mode].people.find(x=>x.id===pid);
+  if(!p)return;
+  const e=p.entries[i];if(!e)return;
+  const already=(e.payments||[]).reduce((s,x)=>s+x.amount,0);
+  const actual=Math.min(amount,parseFloat(e.amount)-already);
+  if(actual<=0)return;
+  if(!e.payments)e.payments=[];
+  e.payments.push({amount:actual});
+  save();render();
+}
+
+function rmPmt(pid,i,pi){
+  const p=D[mode].people.find(x=>x.id===pid);
+  if(!p||!p.entries[i]?.payments)return;
+  p.entries[i].payments.splice(pi,1);save();render();
+}
+
+document.getElementById('backdrop').addEventListener('click',function(e){
+  if(e.target===this)closeModal();
+});
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape')closeModal();
+  if(e.key==='Enter'&&document.getElementById('backdrop').classList.contains('open'))confirmModal();
+});
+
+loadData();
+if(!D.in.active&&D.in.people.length)D.in.active=D.in.people[0].id;
+if(!D.out.active&&D.out.people.length)D.out.active=D.out.people[0].id;
+render();
+</script>
+</body>
+</html>
